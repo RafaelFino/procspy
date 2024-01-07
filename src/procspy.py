@@ -67,6 +67,7 @@ def main(config: Config):
         time.sleep(config.interval)        
         
 if __name__ == "__main__":    
+    ret = 0
     try:
         if len(sys.argv) < 2:
             raise Exception("Usage: python procspy.py <config file>")
@@ -75,13 +76,14 @@ if __name__ == "__main__":
         config.load(sys.argv[1])
         Logger.init(config.log_name)    
         Logger.success(f"Config load from file: {sys.argv[1]}")
+        
         main(config)
-    
+        
     except Exception as e:
-        Logger.error(f"Error: {e}")
-        sys.exit(1) 
+        Logger.error(f"{e}")
+        ret = 1
     
     finally:
-        Logger.info("Exiting...")
-        sys.exit(0) 
+        Logger.info("Exiting...")        
+        sys.exit(ret)
     

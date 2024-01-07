@@ -19,7 +19,7 @@ def check(procs: dict, last: datetime) -> dict:
                 Logger.debug(f"+ Added {n}: {elapsed:.2f}s to {procs[n].get_elapsed():.2f}s -> Limit: {procs[n].limit:.2f}s")    
 
                 if procs[n].is_expired():
-                    Logger.warning(f"--> Expired {n}: {procs[n].get_elapsed()}s")
+                    Logger.info(f"--> Expired {n}: {procs[n].get_elapsed()}s")
                     Logger.info(f"--> Killing {n} ({pid})")
                     p.kill()
                     Logger.success(f"--> Killed {n} ({pid})")
@@ -28,7 +28,7 @@ def check(procs: dict, last: datetime) -> dict:
         except psutil.NoSuchProcess:
             pass
         except Exception as e:            
-            Logger.warning(f"check error: {e}")
+            Logger.warning(f"check error: {e}")            
 
     return procs
 
@@ -60,9 +60,9 @@ def main(config: Config, storage: Storage):
         last = datetime.now()
         time.sleep(config.interval)        
         
-if __name__ == "__main__":
-    Logger.init("procspy.log")
+if __name__ == "__main__":    
     config = Config()
     config.load("config.json")
+    Logger.init(config.log_name)
     storage = Storage(config.database)
     main(config, storage)

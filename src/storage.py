@@ -11,7 +11,7 @@ class Storage:
         date = datetime.now().strftime("%Y%m%d")
 
         try:
-            self.db = sqlite3.connect(f"{basepath}-{date}.db")
+            self.db = sqlite3.connect(f"{basepath}//{date}.db")
             cursor = self.db.cursor()
 
             cursor.execute("""

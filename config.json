@@ -1,5 +1,6 @@
 {
     "database": "data",
+    "log_name": "data//log.txt",  
     "interval": 60,
     "targets": {
         "chrome": {

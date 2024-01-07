@@ -1,4 +1,4 @@
-import psutil, time
+import psutil, time, sys
 from datetime import datetime
 from storage import Storage
 from proc import Proc
@@ -62,7 +62,7 @@ def main(config: Config, storage: Storage):
         
 if __name__ == "__main__":    
     config = Config()
-    config.load("config.json")
+    config.load(sys.argv[1])
     Logger.init(config.log_name)
     storage = Storage(config.database)
     main(config, storage)

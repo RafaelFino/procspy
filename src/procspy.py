@@ -17,10 +17,10 @@ def check(procs: dict, last: datetime, config: Config) -> dict:
                 elapsed = (datetime.now() - last).total_seconds()
                 procs[n].add(elapsed)
                 storage.insert(n, elapsed)
-                Logger.debug(f"+ Added {n}: {elapsed:.2f}s to {procs[n].get_elapsed():.2f}s -> Limit: {procs[n].limit:.2f}s")    
+                Logger.info(f"+ Added {n} use in {elapsed:.2f}s to {procs[n].get_elapsed():.2f}s -> Limit: {procs[n].limit:.2f}s")    
 
                 if procs[n].is_expired():
-                    Logger.info(f"--> Expired {n}: {procs[n].get_elapsed()}s")
+                    Logger.info(f"--> Expired {n}: {procs[n].get_elapsed()}s/{procs[n].limit}s")
                     Logger.info(f"--> Killing {n} ({pid})")
                     p.kill()
                     Logger.success(f"--> Killed {n} ({pid})")
@@ -39,7 +39,7 @@ def loadProcs(config: Config) -> dict:
     procs = {}
 
     for name, item in config.targets.items():
-        Logger.info(f"Get {name}: {item.limit}s from config file")
+        Logger.info(f"Get {name}: limited to {item.limit}s from config file")
         procs[name] = Proc(name, item.limit)
 
     storage = Storage(config.database)
@@ -47,14 +47,13 @@ def loadProcs(config: Config) -> dict:
     storage.close()
 
     for name, elapsed in data.items():
-        Logger.info(f"Get {name}: {elapsed:.2f}s from database")
 
         if name in procs.keys():            
             procs[name].add(elapsed)
-            Logger.info(f"Added {name}: {elapsed:.2f}s to {procs[name].get_elapsed():.2f}s")
+            Logger.info(f"Load {name} from database with {elapsed:.2f}s from previous session")
 
     for name, proc in procs.items():
-        Logger.info(f"{name}: {proc}")
+        Logger.success(f"Including process for [{name}]: {proc}")
     
     return procs
    
@@ -68,7 +67,21 @@ def main(config: Config):
         time.sleep(config.interval)        
         
 if __name__ == "__main__":    
-    config = Config()
-    config.load(sys.argv[1])
-    Logger.init(config.log_name)    
-    main(config)
+    try:
+        if len(sys.argv) < 2:
+            raise Exception("Usage: python procspy.py <config file>")
+
+        config = Config()
+        config.load(sys.argv[1])
+        Logger.init(config.log_name)    
+        Logger.success(f"Config load from file: {sys.argv[1]}")
+        main(config)
+    
+    except Exception as e:
+        Logger.error(f"Error: {e}")
+        sys.exit(1) 
+    
+    finally:
+        Logger.info("Exiting...")
+        sys.exit(0) 
+    

@@ -5,8 +5,9 @@ from proc import Proc
 from config import Config   
 from logger import Logger
 
-def check(procs: dict, last: datetime) -> dict:   
+def check(procs: dict, last: datetime, config: Config) -> dict:   
     targets = set(procs.keys())
+    storage = Storage(config.database)
 
     for pid in psutil.pids():
         try:
@@ -28,18 +29,24 @@ def check(procs: dict, last: datetime) -> dict:
         except psutil.NoSuchProcess:
             pass
         except Exception as e:            
-            Logger.warning(f"check error: {e}")            
+            Logger.warning(f"check error: {e}")    
+
+    storage.close()        
 
     return procs
 
-def load(config: Config) -> dict:
+def loadProcs(config: Config) -> dict:
     procs = {}
 
     for name, item in config.targets.items():
         Logger.info(f"Get {name}: {item.limit}s from config file")
         procs[name] = Proc(name, item.limit)
-        
-    for name, elapsed in storage.get_elapsed().items():
+
+    storage = Storage(config.database)
+    data = storage.get_elapsed()
+    storage.close()
+
+    for name, elapsed in data.items():
         Logger.info(f"Get {name}: {elapsed:.2f}s from database")
 
         if name in procs.keys():            
@@ -51,18 +58,17 @@ def load(config: Config) -> dict:
     
     return procs
    
-def main(config: Config, storage: Storage):        
-    procs = load(config)    
+def main(config: Config):
+    procs = loadProcs(config)    
     last = datetime.now()
     
     while True:        
-        procs = check(procs, last)
+        procs = check(procs, last, config)
         last = datetime.now()
         time.sleep(config.interval)        
         
 if __name__ == "__main__":    
     config = Config()
     config.load(sys.argv[1])
-    Logger.init(config.log_name)
-    storage = Storage(config.database)
-    main(config, storage)
+    Logger.init(config.log_name)    
+    main(config)

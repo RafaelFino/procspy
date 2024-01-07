@@ -29,9 +29,10 @@ CREATE TABLE IF NOT EXISTS processes (
             logger.Error(f"Storage error: {e}")
             raise e
 
-    def __del__(self) -> None:
+    def close(self) -> None:
         if self.db is not None:
             self.db.close()
+            self.db = None  
 
     def insert(self, name: str, elapsed: float) -> None:
         try:

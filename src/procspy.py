@@ -5,9 +5,17 @@ from proc import Proc
 from config import Config   
 from logger import Logger
 
+
+day = datetime.now().strftime("%Y-%m-%d")
 def check(procs: dict, last: datetime, config: Config) -> dict:   
     targets = set(procs.keys())
     storage = Storage(config.database)
+
+    if day != datetime.now().strftime("%Y-%m-%d"):
+        Logger.info(f"New day: {day} -> Reset elapsed time")
+        for proc in procs.values():
+            proc.reset()
+        day = datetime.now().strftime("%Y-%m-%d")
 
     for pid in psutil.pids():
         try:
@@ -59,7 +67,7 @@ def loadProcs(config: Config) -> dict:
    
 def main(config: Config):
     procs = loadProcs(config)    
-    last = datetime.now()
+    last = datetime.now()    
     
     while True:        
         procs = check(procs, last, config)

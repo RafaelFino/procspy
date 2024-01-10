@@ -3,7 +3,6 @@ from typing import Any
 from proc import Proc   
 class Config:
     def __init__(self) -> None:
-        self.interval = 5
         self.interval = 60  
         self.database = "data/"
         self.log_name = "procspy.log"

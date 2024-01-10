@@ -28,3 +28,6 @@ class Proc:
         
     def __str__(self) -> str:
         return self.to_json()
+    
+    def reset(self) -> None:
+        self.elapsed = []
